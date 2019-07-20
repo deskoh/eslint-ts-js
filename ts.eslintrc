@@ -1,0 +1,27 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "env": {
+    "es6": true,
+    "node": true,
+  },
+  "extends": [
+    "airbnb-base",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/typescript",
+  ],
+  "settings": {
+    // Settings for eslint-plugin-import resolver
+    "import/resolver": {
+      // Settings for eslint-import-resolver-typescript to resolve TypeScript path mapping.
+      "typescript": {},
+    },
+  },
+  "parserOptions": {
+    // Following parserOptions specified by airbnb-base
+    // "ecmaVersion": 2018,
+    // "sourceType": "module",
+    // Options for @typescript-eslint/eslint-plugin
+    "project": "./tsconfig.json",
+  },
+  "rules": {}
+}
