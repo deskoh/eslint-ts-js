@@ -1,6 +1,6 @@
 # ESLint Configurations for TypeScript / JavaScript Projects
 
-Specified ESLint configurations for mixed-type project with both TypeScript and JavaScript files.
+ESLint configurations for mixed-type project with both TypeScript and JavaScript files.
 
 There are 2 parsers that can be used, [`babel-eslint`](https://github.com/babel/babel-eslint) and [`@typescript-eslint/parser`](https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/parser). See [here](https://github.com/typescript-eslint/typescript-eslint#what-about-babel-and-babel-eslint) for the differences between them.
 
@@ -19,7 +19,7 @@ npm run lint:babel
 
 If [_path mapping_](https://www.typescriptlang.org/docs/handbook/module-resolution.html#path-mapping) is used by specifying `"paths"` property in `tsconfig.json`, `eslint-import-resolver-typescript` is required for `eslint-plugin-import` to resolve `import`s correctly.
 
-```json
+```jsonc
 "settings": {
   // Settings for eslint-plugin-import resolver
   "import/resolver": {
@@ -35,7 +35,7 @@ To detect cyclic dependencies (`import/no-cycle`) in files with TypeScript `impo
 
 See [here](https://github.com/benmosher/eslint-plugin-import/blob/master/config/typescript.js) for the plugin settings.
 
-```json
+```jsonc
 "extends": [
   // Following requires `@typescript-eslint/parser`
   "plugin:import/typescript",
@@ -46,7 +46,7 @@ See [here](https://github.com/benmosher/eslint-plugin-import/blob/master/config/
 
 To detect cyclic dependencies (`import/no-cycle`) in files with TypeScript `import`s, you need to specify the extensions to be parsed as modules and inspected for `export`s
 
-```json
+```jsonc
 "settings": {
   // Specifiy file extensions to be parsed as modules and inspected for `export`s
   "import/extensions": [".js", ".ts"],
@@ -55,7 +55,7 @@ To detect cyclic dependencies (`import/no-cycle`) in files with TypeScript `impo
 
 If `eslint-import-resolver-typescript` is not used, the following settings is required by `import/no-unresolved` to resolve TypeScript `import`s.
 
-```json
+```jsonc
 "settings": {
   // Settings for eslint-plugin-import
   "import/resolver": {
@@ -73,7 +73,7 @@ Alternatively, `plugin:import/typescript` can be used. This however requires `@t
 
 If using `babel-eslint` parser, a different parser (`@typescript-eslint/parser`) can be used by `eslint-plugin-import` for TypeScript files by specifying the following. (See [here](https://github.com/benmosher/eslint-plugin-import/blob/master/config/typescript.js) for the plugin settings.)
 
-```json
+```jsonc
 "extends": [
   "plugin:import/typescript",
 ],
