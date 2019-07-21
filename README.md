@@ -1,19 +1,59 @@
 # ESLint Configurations for TypeScript / JavaScript Projects
 
-ESLint configurations for mixed-type project with both TypeScript and JavaScript files.
+Airbnb ESLint configurations for mixed-type project with both TypeScript and JavaScript files.
 
-There are 2 parsers that can be used, [`babel-eslint`](https://github.com/babel/babel-eslint) and [`@typescript-eslint/parser`](https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/parser). See [here](https://github.com/typescript-eslint/typescript-eslint#what-about-babel-and-babel-eslint) for the differences between them.
+## Airbnb ESLint Config / Rules
 
-`ts.eslintrc` configuration uses `@typescript-eslint/parser` and `babel.eslintrc` configuration uses `babel-eslint`.
+The goal is for the ESLint config to follow [Airbnb Style Guide](https://github.com/airbnb/javascript) and [typescript-eslint/recommended](https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin) in order of precedence.
 
-This project can be used to test rules parity using the two parsers.
+As [typescript-eslint/recommended](https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended.json) will turn off equivalent ESLint rules, ordering whichever rule first will not acheive the desired configuration.
 
-```sh
-# Run ESLint using `@typescript-eslint/parser` 
-npm run lint
-# Run ESLint using `babel-eslint` 
-npm run lint:babel
+```jsonc
+// ⚠️Following configurations are 'WRONG'.🚨
+
+// `airbnb` rule will be overriden by `typescript-eslint/recommended`
+"extends": [
+  "airbnb-base",
+  "plugin:@typescript-eslint/recommended",
+],
+
+// `airbnb` rule will turn back on equivalent ESLint rules that is disabled by `typescript-eslint/recommended`.
+// Both rules could have conflicting configuration.
+"extends": [
+  "plugin:@typescript-eslint/recommended",
+  "airbnb-base",
+],
 ```
+
+For example, if _airbnb-base_ is ordered first, the 2-space indentation of _airbnb_ will be overrided by 4-space indentation of _typescript-eslint/recommended_. On the other hand, if _typescript-eslint/recommended_ is ordered first, it will result in 2 conflicting rules for `no-unused-vars`.
+
+```ts
+// `airbnb` unused-vars rule: ['error', { ..., ignoreRestSiblings: true }]
+// `typescript-eslint/recommended` unused-vars rule: ['warn', { ..., ignoreRestSiblings: false }]
+
+// Following is allowed using `airbnb` but will result in warning: 'type' is defined but never used
+const { type, ...coords } = data;
+```
+
+Lastly, the TypeScript compiler `tsc` has type-checking features that overlaps with some ESLint rules (see [@typescript-eslint/eslint-recommended](https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/eslint-recommended.ts)) or has compatibility issues which would require certain `airbnb` rules to be disabled for TypeScript files. A good reference for such compatibility issues found in the [react-app](https://github.com/facebook/create-react-app/blob/master/packages/eslint-config-react-app/index.js) config and are described in the following issues.
+
+  * https://github.com/facebook/create-react-app/issues/6906
+  * https://github.com/typescript-eslint/typescript-eslint/issues/291
+  * https://github.com/typescript-eslint/typescript-eslint/issues/477
+
+## Proposed TypeScript Airbnb Config
+
+[ESLint 6.0](https://eslint.org/blog/2019/06/eslint-v6.0.0-released) is required to support `extends` in configuration using glob patterns. It is assumed that `checkJs` flag is not set to `true` in `tsconfig.json`. 
+
+Based on the issues in previous section, the proposed config for TypeScript Airbnb style will
+
+1. Extends from `airbnb-base`.
+2. Extends from `typescript-eslint/recommended`.
+    - For rules with ESLint equivalents, override rules if required to follow `airbnb`.
+3. [WIP]: Replace remaining `airbnb` rules by `typescript-eslint` equivalent if available.
+4. For TypeScript files
+    - Extends from `@typescript-eslint/eslint-recommended` to disable rules in `airbnb` that is checked by `tsc`.
+    - Disable `airbnb` ESLint rules where `tsc` does a better job or where it does not play well with TypeScript files, if they are not already turned off by `@typescript-eslint/eslint-recommended`.
 
 ## Supporting TypeScript _path mapping_
 
@@ -27,6 +67,21 @@ If [_path mapping_](https://www.typescriptlang.org/docs/handbook/module-resoluti
     "typescript": {},
   },
 },
+```
+
+## Parser Options
+
+There are 2 parsers that can be used, [`babel-eslint`](https://github.com/babel/babel-eslint) and [`@typescript-eslint/parser`](https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/parser). See [here](https://github.com/typescript-eslint/typescript-eslint#what-about-babel-and-babel-eslint) for the differences between them.
+
+`ts.eslintrc` configuration uses `@typescript-eslint/parser` and `babel.eslintrc` configuration uses `babel-eslint`.
+
+This project can be used to test rules parity using the two parsers.
+
+```sh
+# Run ESLint using `@typescript-eslint/parser` 
+npm run lint
+# Run ESLint using `babel-eslint` 
+npm run lint:babel
 ```
 
 ## Using `@typescript-eslint/parser` Parser
@@ -78,61 +133,6 @@ If using `babel-eslint` parser, a different parser (`@typescript-eslint/parser`)
   "plugin:import/typescript",
 ],
 ```
-
-## Airbnb ESLint Config / Rules
-
-The goal is for the ESLint config to follow [Airbnb Style Guide](https://github.com/airbnb/javascript) and [typescript-eslint/recommended](https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin) in order of precedence.
-
-As [typescript-eslint/recommended](https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended.json) will turn off equivalent ESLint rules, ordering whichever rule first will not acheive the desired configuration.
-
-```jsonc
-// ⚠️Following configurations are WRONG.🚨
-
-// `airbnb` rule will be overriden by `typescript-eslint/recommended`
-"extends": [
-  "airbnb-base",
-  "plugin:@typescript-eslint/recommended",
-],
-
-// `airbnb` rule will turn back on equivalent ESLint rules that is disabled by `typescript-eslint/recommended`.
-// Both rules could have conflicting configuration.
-"extends": [
-  "plugin:@typescript-eslint/recommended",
-  "airbnb-base",
-],
-```
-
-For example, if _airbnb-base_ is ordered first, the 2-space indentation of _airbnb_ will be overrided by 4-space indentation of _typescript-eslint/recommended_. On the other hand, if _typescript-eslint/recommended_ is ordered first, it will result in 2 conflicting rules for `no-unused-vars`.
-
-```ts
-// `airbnb` unused-vars rule: ['error', { ..., ignoreRestSiblings: true }]
-// `typescript-eslint/recommended` unused-vars rule: ['warn', { ..., ignoreRestSiblings: false }]
-
-// Following is allowed using `airbnb` but will result in warning: 'type' is defined but never used
-const { type, ...coords } = data;
-```
-
-Lastly, the TypeScript compiler `tsc` has type-checking features that overlaps with some ESLint rules (see [@typescript-eslint/eslint-recommended](https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/eslint-recommended.ts)) or has compatibility issues which would require certain `airbnb` rules to be disabled for TypeScript files. A good reference for such compatibility issues found in the [react-app](https://github.com/facebook/create-react-app/blob/master/packages/eslint-config-react-app/index.js) config and are described in the following issues.
-
-  * https://github.com/facebook/create-react-app/issues/6906
-  * https://github.com/typescript-eslint/typescript-eslint/issues/291
-  * https://github.com/typescript-eslint/typescript-eslint/issues/477
-
-## Proposed TypeScript Airbnb Config
-
-[ESLint 6.0](https://eslint.org/blog/2019/06/eslint-v6.0.0-released) is required to support `extends` in configuration using glob patterns. It is assumed that `checkJs` flag is not set to `true` in `tsconfig.json`. 
-
-Based on the issues in previous section, the proposed config for TypeScript Airbnb style will
-
-1. Extends from `airbnb-base`.
-2. For TypeScript files     
-    - Extends from `@typescript-eslint/eslint-recommended` to disable rules in `airbnb-base` that is checked by `tsc`.
-3. For rules in `typescript-eslint/recommended` without ESLint equivalent, add them in.
-4. For rules in `typescript-eslint/recommended` with ESLint equivalent, customize using `airbnb` ESLint equivalent.
-5. For TypeScript files
-    - Disable `airbnb` ESLint rules where `tsc` does a better job or where it does not play well with TypeScript files, if they are not already turned off by `@typescript-eslint/eslint-recommended`.
-6. [TBD]: Replace remaining `airbnb` rules by `typescript-eslint` equivalent if available.
-
 
 ## Known Issues
 
