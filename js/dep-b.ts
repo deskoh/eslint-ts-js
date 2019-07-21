@@ -1,3 +1,3 @@
 import './dep-a';
 
-export function b() { return 1; }
+export default function b() { return 1; }
