@@ -2,16 +2,18 @@
 
 Airbnb ESLint configurations for mixed-type project with both TypeScript and JavaScript files.
 
+> The following is updated for `typescript-eslint@2.x` where stylistic rules are removed from the recommended ruleset. See [typescript-eslint#651](https://github.com/typescript-eslint/typescript-eslint/issues/651) and PR [typescript-eslint#729](https://github.com/typescript-eslint/typescript-eslint/pull/729) for more details. For `typescript-eslint@1.x`, see [here](https://github.com/deskoh/eslint-ts-js/blob/960be7cf37c04bb582246b5f41bb6d040d6e8b1e/README.md).
+
 ## Airbnb ESLint Config / Rules
 
 The goal is for the ESLint config to follow [Airbnb Style Guide](https://github.com/airbnb/javascript) and [typescript-eslint/recommended](https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin) in order of precedence.
 
-As [typescript-eslint/recommended](https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended.json) will turn off equivalent ESLint rules, ordering whichever rule first will not acheive the desired configuration.
+Note that neither ordering `airbnb-base` nor `typescript-eslint/recommended` ruleset first will acheive the desired configuration.
 
 ```jsonc
 // ⚠️Following configurations are 'WRONG'.🚨
 
-// `airbnb` rule will be overriden by `typescript-eslint/recommended`
+// Some `airbnb` rules will be overriden by `typescript-eslint/recommended` ruleset
 "extends": [
   "airbnb-base",
   "plugin:@typescript-eslint/recommended",
@@ -25,7 +27,7 @@ As [typescript-eslint/recommended](https://github.com/typescript-eslint/typescri
 ],
 ```
 
-For example, if _airbnb-base_ is ordered first, the 2-space indentation of _airbnb_ will be overrided by 4-space indentation of _typescript-eslint/recommended_. On the other hand, if _typescript-eslint/recommended_ is ordered first, it will result in 2 conflicting rules for `no-unused-vars`.
+For example, if _airbnb-base_ is ordered first, the `camelcase` rule of _airbnb_ will be overrided by `@typescript-eslint/camelcase` rule. On the other hand, if _typescript-eslint/recommended_ is ordered first, `@typescript-eslint/camelcase` will still be turned on, in addition to `airbnb`'s `camelcase` rule.
 
 ```ts
 // `airbnb` unused-vars rule: ['error', { ..., ignoreRestSiblings: true }]
@@ -35,7 +37,7 @@ For example, if _airbnb-base_ is ordered first, the 2-space indentation of _airb
 const { type, ...coords } = data;
 ```
 
-Lastly, the TypeScript compiler `tsc` has type-checking features that overlaps with some ESLint rules (see [@typescript-eslint/eslint-recommended](https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/eslint-recommended.ts)) or has compatibility issues which would require certain `airbnb` rules to be disabled for TypeScript files. A good reference for such compatibility issues found in the [react-app](https://github.com/facebook/create-react-app/blob/master/packages/eslint-config-react-app/index.js) config and are described in the following issues.
+Lastly, there are some compatibility issues which would require certain `airbnb` rules to be disabled for TypeScript files. A good reference for such compatibility issues found in the [react-app](https://github.com/facebook/create-react-app/blob/master/packages/eslint-config-react-app/index.js) config and are described in the following issues.
 
   * https://github.com/facebook/create-react-app/issues/6906
   * https://github.com/typescript-eslint/typescript-eslint/issues/291
@@ -43,17 +45,27 @@ Lastly, the TypeScript compiler `tsc` has type-checking features that overlaps w
 
 ## Proposed TypeScript Airbnb Config
 
-[ESLint 6.0](https://eslint.org/blog/2019/06/eslint-v6.0.0-released) is required to support `extends` in configuration using glob patterns. It is assumed that `checkJs` flag is not set to `true` in `tsconfig.json`. 
+[ESLint 6.0](https://eslint.org/blog/2019/06/eslint-v6.0.0-released) is required to if using `extends` in `overrides` configuration using glob patterns. It is also assumed that `checkJs` flag is not set to `true` in `tsconfig.json`. 
 
-Based on the issues in previous section, the proposed config for TypeScript Airbnb style will
+The [`eslint-recommended`](https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/eslint-recommended.ts) ruleset is used after extending `airbnb-base`. Originally meant to be used after extending `eslint:recommended` ruleset, it disables rules for `*.ts(x)` files that are already checked by the Typescript compiler. It is also applicable here as `airbnb-base` ruleset is a superset of `eslint:recommended`.
+
+The [`typescript-eslint/recommended`](https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended.json) and [`typescript-eslint/recommended-requiring-type-checking`](https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/recommended-requiring-type-checking.json) rulesets are used next. See [here](https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#usage) for more details about both rulesets.
+
+> `typescript-eslint/recommended-requiring-type-checking` requires a path to your `tsconfig.json` file in the "project" property of "parserOptions". If you do not do this, you will get a runtime error. As the rule applies to `*.js` files, this assumes `allowJs` is set to `true` in `tsconfig.json`. 
+
+Next, [`import/typescript` plugin](https://github.com/benmosher/eslint-plugin-import/blob/master/config/typescript.js) is used to support linting of ES2015+ (ES6+) import/export syntax for TypeScript.
+
+Specific rules overrides are then required to 'restore' `airbnb` rules. These rules are derived by inspecting ESLint rules in both `typescript-eslint/recommended` and `typescript-eslint/recommended-requiring-type-checking`, and comparing them to the `airbnb` ruleset.
+
+In summary, the proposed config for TypeScript Airbnb style will
 
 1. Extends from `airbnb-base`.
-2. Extends from `typescript-eslint/recommended`.
+2. Extends from `plugin:@typescript-eslint/eslint-recommended` to turn off ESLint equivalent ESLint rules only for `*.ts(x)` files.
+3. Extends from `typescript-eslint/recommended` and `typescript-eslint/recommended-requiring-type-checking`.
     - For rules with ESLint equivalents, override rules if required to follow `airbnb`.
-3. [WIP]: Replace remaining `airbnb` rules by `typescript-eslint` equivalent if available.
-4. For TypeScript files
-    - Extends from `@typescript-eslint/eslint-recommended` to disable rules in `airbnb` that is checked by `tsc`.
-    - Disable `airbnb` ESLint rules where `tsc` does a better job or where it does not play well with TypeScript files, if they are not already turned off by `@typescript-eslint/eslint-recommended`.
+4. [WIP]: Replace remaining `airbnb` rules by `typescript-eslint` equivalent if available.
+5. For TypeScript files
+    - Disable `airbnb` ESLint rules where `tsc` does a better job or where it does not play well with TypeScript files, if they are not already turned off by previous rulesets.
 
 ## Supporting TypeScript _path mapping_
 
@@ -100,6 +112,8 @@ See [here](https://github.com/benmosher/eslint-plugin-import/blob/master/config/
 ## Using `babel-eslint` Parser
 
 To detect cyclic dependencies (`import/no-cycle`) in files with TypeScript `import`s, you need to specify the extensions to be parsed as modules and inspected for `export`s
+
+Note that using `@typescript-eslint` plugin will override the parser used (See [source](https://github.com/typescript-eslint/typescript-eslint/blob/master/packages/eslint-plugin/src/configs/base.json)).
 
 ```jsonc
 "settings": {

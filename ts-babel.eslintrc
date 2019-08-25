@@ -6,7 +6,6 @@
   },
   "extends": [
     "airbnb-base",
-    "plugin:@typescript-eslint/recommended",
     "plugin:import/typescript",
   ],
   "settings": {
@@ -21,5 +20,15 @@
     // "ecmaVersion": 2018,
     // "sourceType": "module",
   },
-  "rules": {}
+  "rules": {},
+  "overrides": [
+    {
+      "files": ["**/*.ts?(x)"],
+      "extends": [
+        "plugin:@typescript-eslint/recommended"
+      ],
+      "rules": {
+      }
+    }
+  ]
 }
