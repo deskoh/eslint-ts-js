@@ -29,15 +29,21 @@
   },
   "rules": {
     // Restore `airbnb` rules overridden by `typescript-eslint/recommended` ruleset.
-    //"@typescript-eslint/camelcase": ["error", { "properties": "never", "ignoreDestructuring": false }],
+    "@typescript-eslint/camelcase": ["error", { "properties": "never", "ignoreDestructuring": false }],
     "@typescript-eslint/no-empty-function": ["error", { "allow": ["arrowFunctions", "functions", "methods"] }],
     "@typescript-eslint/no-unused-vars": ["error", { "vars": "all", "args": "after-used", "ignoreRestSiblings": true }],
     "@typescript-eslint/no-use-before-define": ["error", { "functions": true, "classes": true, "variables": true }],
+    "@typescript-eslint/require-await": ["off"],
     "prefer-const": ["error", { "destructuring": "any", "ignoreReadBeforeAssign": true }],
-
-    // Replace remaining `airbnb` rules by `typescript-eslint` equivalent if available
-    "no-useless-constructor": "off",
-    "@typescript-eslint/no-useless-constructor": "warn",
+    
+    // Optional (WIP): Replace remaining `airbnb` rules by `typescript-eslint` equivalent if available
+    // "no-useless-constructor": "off",
+    // "@typescript-eslint/brace-style": "off",
+    // "@typescript-eslint/func-call-spacing": "off",
+    // "@typescript-eslint/indent": "off",
+    // "@typescript-eslint/no-useless-constructor": "off",
+    // "@typescript-eslint/quotes": "off",
+    // "@typescript-eslint/semi": "off",
   },
   "overrides": [
     {
